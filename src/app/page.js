@@ -7,11 +7,11 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import Home from "@/components/home/home";
 import Add from "@/components/add/add";
 
-
 export default function Page() {
   const [activeTab, setActiveTab] = useState('home');
   const [formDataList, setFormDataList] = useState([]);
-  const nodeRef = useRef(null);
+  const homeNodeRef = useRef(null);
+  const addNodeRef = useRef(null);
 
   useEffect(() => {
     const savedFormData = localStorage.getItem('formDataList');
@@ -27,16 +27,16 @@ export default function Page() {
     setActiveTab('home');
   };
 
-  const handleDelete = (index) => {
-    const newFormDataList = formDataList.filter((_, i) => i !== index);
-    setFormDataList(newFormDataList);
-    localStorage.setItem('formDataList', JSON.stringify(newFormDataList));
-  };
+  // const handleDelete = (index) => {
+  //   const newFormDataList = formDataList.filter((_, i) => i !== index);
+  //   setFormDataList(newFormDataList);
+  //   localStorage.setItem('formDataList', JSON.stringify(newFormDataList));
+  // };
 
   const renderSection = () => {
     switch (activeTab) {
       case 'home':
-        return <Home formDataList={formDataList} onDelete={handleDelete} />;
+        return <Home formDataList={formDataList} />;
       case 'add':
         return <Add onSubmit={handleFormSubmit} />;
       default:
@@ -44,6 +44,7 @@ export default function Page() {
     }
   };
 
+  
   return (
     <>
       <header>
@@ -51,9 +52,7 @@ export default function Page() {
         <hr className="border-gray-700"/>
       </header>
 
-
       <main className="flex gap-4 m-3">
-
         <aside className="flex flex-col gap-3">
           <button className={`${activeTab === 'home' ? 'bg-gray-700 rounded-lg p-1' : ''}`} onClick={() => setActiveTab('home')}>
             <div className="flex flex-col text-xs items-center w-12 h-12 justify-center">
@@ -89,10 +88,11 @@ export default function Page() {
             <TransitionGroup>
               <CSSTransition
                 key={activeTab}
+                nodeRef={activeTab === 'home' ? homeNodeRef : addNodeRef}
                 timeout={200}
                 classNames="fade"
               >
-                <div className="transition-all duration-300" ref={nodeRef}>{renderSection()}</div>
+                <div className="transition-all duration-300" ref={activeTab === 'home' ? homeNodeRef : addNodeRef}>{renderSection()}</div>
               </CSSTransition>
             </TransitionGroup>
           </div>

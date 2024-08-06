@@ -22,7 +22,7 @@ html, body {
   }
 
   .scrollbar-thin-transparent::-webkit-scrollbar {
-    width: 6px;  /* Adjust the width for thin scrollbar */
+    width: 6px; /* Adjust the width for thin scrollbar */
   }
   
   .scrollbar-thin-transparent::-webkit-scrollbar-track {
