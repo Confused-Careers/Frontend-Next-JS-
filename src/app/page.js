@@ -6,10 +6,15 @@ import SearchBar from "@/components/search/searchbar";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import Home from "@/components/home/home";
 import Add from "@/components/add/add";
+import RegisterForm from "@/components/register/register";
+import LoginForm from "@/components/login/login";
+import LogoutForm from "@/components/logout/logout";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState('home');
   const [formDataList, setFormDataList] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const homeNodeRef = useRef(null);
   const addNodeRef = useRef(null);
 
@@ -47,10 +52,19 @@ export default function Page() {
   
   return (
     <>
-      <header>
+      <header className="flex justify-between items-center">
         <p className="sm:text-2xl p-2">ConfusedCareers</p>
-        <hr className="border-gray-700"/>
+        <div className="flex">
+          <RegisterForm/>
+          {isLoggedIn ? (
+            <LogoutForm onLogout={() => setIsLoggedIn(false)} />
+          ) : (
+            <LoginForm onLoginSuccess={() => setIsLoggedIn(true)} />
+          )}
+        </div>
       </header>
+
+      <hr className="border-gray-700"/>
 
       <main className="flex gap-4 m-3">
         <aside className="flex flex-col gap-3">
