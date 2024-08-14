@@ -12,7 +12,7 @@ const RegisterForm = () => {
     firstName: '',
     lastName: '',
     email: '',
-    photo: null, // This will hold the file if provided
+    image: '',
     role: '',
     password: '',
     confirmPassword: '',
@@ -24,60 +24,64 @@ const RegisterForm = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, photo: e.target.files[0] });
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData({ ...formData, image: reader.result });
+    };
+    if (file) {
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
-    // Form validation
+    // Validation fields
     if (!formData.firstName) newErrors.firstName = "First name is required";
     if (!formData.lastName) newErrors.lastName = "Last name is required";
     if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const formDataToSend = new FormData();
-        formDataToSend.append("firstName", formData.firstName);
-        formDataToSend.append("lastName", formData.lastName);
-        formDataToSend.append("email", formData.email);
-        formDataToSend.append("role", formData.role);
-        formDataToSend.append("password", formData.password);
+        let data = JSON.stringify({
+          "first_name": formData.firstName,
+          "last_name": formData.lastName,
+          "email": formData.email,
+          "password": formData.password,
+          "confirm_password": formData.confirmPassword,
+          "role": formData.role,
+          "image": formData.image
+        });
 
-        if (formData.photo) {
-          formDataToSend.append("photo", formData.photo);
-        }
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`,
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Accept': 'application/json'
+          },
+          data: data
+        };
 
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`,
-          formDataToSend,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
+        axios.request(config)
+          .then((response) => {
+            console.log(JSON.stringify(response.data));
+            setIsOpen(false);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
 
-        if (response.status === 200) {
-          console.log("Registration successful");
-          setIsOpen(false);
-        } else {
-          console.log("Registration failed", response);
-        }
       } catch (error) {
         console.error("An error occurred:", error);
-        // if (error.response) {
-        //   console.error("Error response data:", error.response.data);
-        //   if (error.response.status === 422) {
-        //     setErrors("Validation error on server.");
-        //   }
-        // } else {
-        //   setErrors("An error occurred. Please try again.");
-        // }
       }
     } else {
       setErrors(newErrors);
@@ -86,13 +90,14 @@ const RegisterForm = () => {
 
   return (
     <div className="p-4">
-      <Button onClick={() => setIsOpen(true)} className="bg-gray-600 text-white">
+      <Button onClick={() => setIsOpen(true)} className="bg-gray-600 transition-shadow duration-300 hover:shadow-inner hover:shadow-gray-500 text-white">
         Register
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm">
-          <div className="bg-gray-700 p-6 rounded-lg shadow-xl w-96">
+        <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center transition-opacity duration-300 ease-in-out z-50 backdrop-blur-sm">
+          <div className="bg-gray-700 p-6 rounded-lg shadow-xl w-96 transition-all duration-300 ease-in-out transform scale-100 opacity-100" 
+               style={{animation: 'modalFadeIn 0.3s ease-out'}}>
             <h2 className="text-2xl font-bold mb-4">Register</h2>
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
@@ -134,13 +139,13 @@ const RegisterForm = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="photo">Upload Photo</Label>
+                  <Label htmlFor="image">Upload Photo</Label>
                   <Input
-                    id="photo"
-                    name="photo"
+                    id="image"
+                    name="image"
                     type="file"
                     onChange={handleFileChange}
-                    className="w-full bg-gray-600 text-white border-none"
+                    className="w-full bg-gray-600 border-none"
                     accept="image/*"
                   />
                 </div>
@@ -152,8 +157,8 @@ const RegisterForm = () => {
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-700">
-                      <SelectItem value="user">Mentor</SelectItem>
-                      <SelectItem value="admin">Student</SelectItem>
+                      <SelectItem value="assistant">Mentor</SelectItem>
+                      <SelectItem value="user">Student</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
@@ -198,6 +203,18 @@ const RegisterForm = () => {
           </div>
         </div>
       )}
+      <style jsx>{`
+        @keyframes modalFadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 };

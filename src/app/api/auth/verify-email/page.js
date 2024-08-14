@@ -1,4 +1,3 @@
-
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -10,16 +9,32 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     if (token) {
-      axios.post(`${NEXT_PUBLIC_process.env.API_BASE_URL}/api/auth/verify-email`, { token })
+      axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/verify-email`, { token })
         .then(response => {
-          setStatus('Verification successful! Redirecting to login...');
-          console.log(token);
-          setTimeout(() => {
-            router.push('/');
-          }, 3000);
+          if (response.data.success) {
+            
+            axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, { email: response.data.email, password: response.data.password })
+              .then(loginResponse => {
+                if (loginResponse.status === 200 && loginResponse.data.success) {
+                  
+                  localStorage.setItem('authToken', loginResponse.data.token);
+                  setStatus('Verification successful! Redirecting to dashboard...');
+                  setTimeout(() => {
+                    router.push('/'); 
+                  }, 3000);
+                } else {
+                  setStatus('Login failed after verification. Please try logging in manually.');
+                }
+              })
+              .catch(error => {
+                setStatus('Login error. Please try again.');
+              });
+          } else {
+            setStatus('Verification failed. Please try again.');
+          }
         })
         .catch(error => {
-          setStatus('Verification failed. Please try again.');
+          setStatus('Verification error. Please try again.');
         });
     }
   }, [token]);

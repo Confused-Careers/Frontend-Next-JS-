@@ -22,7 +22,7 @@ const LoginForm = ({ onLoginSuccess }) => {
     e.preventDefault();
     const newErrors = {};
     
-    // Form validation 
+    // Form validation
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.password) newErrors.password = "Password is required";
@@ -30,14 +30,16 @@ const LoginForm = ({ onLoginSuccess }) => {
     if (Object.keys(newErrors).length === 0) {
       try {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, formData);
-  
-        // Successful Login
+
+        
         if (response.status === 200 && response.data.success) {
           console.log('Login successful:', response.data);
+         
+          localStorage.setItem('authToken', response.data.token);
           onLoginSuccess();
           setIsOpen(false);
         } else {
-          // Login failed
+          
           console.error('Login failed:', response.data.message);
           setErrors({ form: 'Invalid email or password' });
         }
@@ -49,7 +51,6 @@ const LoginForm = ({ onLoginSuccess }) => {
       setErrors(newErrors);
     }
   };
-  
 
   return (
     <div className="p-4">
