@@ -21,25 +21,21 @@ const LoginForm = ({ onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
-    
+
     // Form validation
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.password) newErrors.password = "Password is required";
-  
+
     if (Object.keys(newErrors).length === 0) {
       try {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, formData);
 
-        
         if (response.status === 200 && response.data.success) {
-          console.log('Login successful:', response.data);
-         
           localStorage.setItem('authToken', response.data.token);
           onLoginSuccess();
           setIsOpen(false);
         } else {
-          
           console.error('Login failed:', response.data.message);
           setErrors({ form: 'Invalid email or password' });
         }
@@ -62,7 +58,7 @@ const LoginForm = ({ onLoginSuccess }) => {
       {isOpen && (
         <div className="z-50 fixed inset-0 bg-opacity-50 flex justify-center items-center transition-opacity duration-300 ease-in-out backdrop-blur-sm">
           <div className="bg-gray-700 p-6 rounded-lg shadow-xl w-96 transition-all duration-300 ease-in-out transform scale-100 opacity-100" 
-               style={{animation: 'modalFadeIn 0.3s ease-out'}}>
+               style={{ animation: 'modalFadeIn 0.3s ease-out' }}>
             <h2 className="text-2xl font-bold mb-4">Login</h2>
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
