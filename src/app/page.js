@@ -32,11 +32,6 @@ export default function Page() {
     setActiveTab('home');
   };
 
-  // const handleDelete = (index) => {
-  //   const newFormDataList = formDataList.filter((_, i) => i !== index);
-  //   setFormDataList(newFormDataList);
-  //   localStorage.setItem('formDataList', JSON.stringify(newFormDataList));
-  // };
 
   const renderSection = () => {
     switch (activeTab) {

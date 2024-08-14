@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MdLogin } from "react-icons/md";
+import axios from 'axios';
 
 const LoginForm = ({ onLoginSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,30 +18,44 @@ const LoginForm = ({ onLoginSuccess }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     
-    // Validate fields
+    // Form validation 
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.password) newErrors.password = "Password is required";
-
+  
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form submitted:", formData);
-      setIsOpen(false);
+      try {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, formData);
+  
+        // Successful Login
+        if (response.status === 200 && response.data.success) {
+          console.log('Login successful:', response.data);
+          onLoginSuccess();
+          setIsOpen(false);
+        } else {
+          // Login failed
+          console.error('Login failed:', response.data.message);
+          setErrors({ form: 'Invalid email or password' });
+        }
+      } catch (error) {
+        console.error('Login error:', error.response?.data || error.message);
+        setErrors({ form: 'An error occurred during login. Please try again.' });
+      }
     } else {
       setErrors(newErrors);
     }
-
-    onLoginSuccess();
   };
+  
 
   return (
     <div className="p-4">
       <Button onClick={() => setIsOpen(true)} className="bg-gray-600 flex items-center gap-1 transition-shadow duration-300 hover:shadow-inner hover:shadow-gray-500 text-white">
         Login
-        <MdLogin/>
+        <MdLogin />
       </Button>
 
       {isOpen && (
